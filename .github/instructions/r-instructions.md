@@ -1,6 +1,5 @@
 ---
-paths:
-  - "**/R/*.R"
+applyTo: "**/R/*.R"
 ---
 
 # R Instructions
@@ -10,9 +9,9 @@ paths:
 - **Main entry point (name matters):**
   - The R function name **must match** the case-sensitive `"function"` field in `Description.qml`.
   - Signature is always:
-    ```r
-    AnalysisName <- function(jaspResults, dataset, options) { ... }
-    ```
+	```r
+	AnalysisName <- function(jaspResults, dataset, options) { ... }
+	```
   - `jaspResults` is a container that stores all of the analysis output and byproducts (if they are supposed to be kept for later use).
   - `dataset` is the loaded dataset in JASP
   - `options` are the UI choices from QML; **do not rename** option keys (they're your API).

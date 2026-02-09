@@ -1,6 +1,5 @@
 ---
-paths:
-  - "**/tests/testthat/*.R"
+applyTo: "**/tests/testthat/*.R"
 ---
 
 # JASP Testing Instructions
