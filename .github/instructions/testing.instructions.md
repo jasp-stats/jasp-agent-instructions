@@ -1,5 +1,6 @@
 ---
 applyTo: "**/tests/testthat/*.R"
+description: "Test framework, snapshots, and test workflow for JASP analyses"
 ---
 
 # JASP Testing Instructions

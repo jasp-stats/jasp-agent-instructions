@@ -1,5 +1,6 @@
 ---
 applyTo: "**/inst/qml/*.qml"
+description: "QML controls, validation, bindings, UI patterns, and qmllint syntax checking"
 ---
 
 # JASP QML Instructions

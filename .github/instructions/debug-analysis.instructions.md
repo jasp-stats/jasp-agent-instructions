@@ -1,8 +1,6 @@
 ---
-applyTo:
-  - "**/R/*.R"
-  - "debugging JASP analysis errors"
-  - "troubleshooting analysis failures"
+applyTo: "**/R/*.R"
+description: "Debugging JASP analysis errors and troubleshooting analysis failures via saveRDS state capture"
 ---
 
 # Debug JASP Analysis (MCP Session)

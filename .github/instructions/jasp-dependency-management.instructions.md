@@ -1,5 +1,6 @@
 ---
 applyTo: "**/R/*.R"
+description: "dependOn mechanics, inheritance, vectors, per-value deps, sentinel pattern"
 ---
 
 # JASP Dependency Management ($dependOn)

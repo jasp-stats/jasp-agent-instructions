@@ -1,5 +1,6 @@
 ---
 applyTo: "**/R/*.R"
+description: "R function structure, validation, jaspResults API, output components, style conventions"
 ---
 
 # R Instructions

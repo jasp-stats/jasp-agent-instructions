@@ -1,7 +1,6 @@
 ---
-applyTo:
-  - "**/tests/testthat/*.R"
-  - "**/R/*.R"
+applyTo: "**/tests/testthat/*.R,**/R/*.R"
+description: "Reading and testing serialized output from runAnalysis (containers, tables, plots, state)"
 ---
 
 # JASP Analysis Output Structure

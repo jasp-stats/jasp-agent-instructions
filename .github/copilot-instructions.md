@@ -13,11 +13,11 @@ For comprehensive guidance on specific topics, see:
 - **[Module Architecture](.github/instructions/jasp-module-architecture.instructions.md)** - **Start here.** QML-Desktop-R reactive loop, jaspResults persistence, options mapping, data flow
 - **[Dependency Management](.github/instructions/jasp-dependency-management.instructions.md)** - $dependOn mechanics, inheritance, vectors, per-value deps, sentinel pattern
 - **[State Management](.github/instructions/jasp-state-management.instructions.md)** - createJaspState caching, model fit patterns, metadata state, dynamic containers
-- **[R Backend Development](.github/instructions/r-instructions.md)** - R function structure, validation, style conventions
+- **[R Backend Development](.github/instructions/R.instructions.md)** - R function structure, validation, style conventions
 - **[Tables](.github/instructions/jasp-tables.instructions.md)** - Table lifecycle, columns, rows, footnotes, error display
 - **[Plots](.github/instructions/jasp-plots.instructions.md)** - Plot lifecycle, composite plots, subgroup/facet patterns
 - **[Containers & Errors](.github/instructions/jasp-containers-and-errors.instructions.md)** - Container patterns, HTML output, error handling
-- **[QML Interface Development](.github/instructions/qml-instructions.md)** - QML controls, validation, bindings, and UI patterns
+- **[QML Interface Development](.github/instructions/inst.qml.instructions.md)** - QML controls, validation, bindings, and UI patterns
 - **[Testing & Test Writing](.github/instructions/testing.instructions.md)** - Test framework, snapshots, and test workflow
 - **[Translation (i18n)](.github/instructions/translation.instructions.md)** - gettext/gettextf/qsTr usage, formatting, plurals
 - **[Output Structure](.github/instructions/jasp-output-structure.instructions.md)** - Reading/testing serialized output (containers, tables, plots, state)
@@ -81,7 +81,7 @@ testAnalysis("AnalysisName")
 - Analysis names are PascalCase exports from NAMESPACE
 - Some tests may skip on certain platforms (e.g., Windows) -- this is expected
 
-**See [testing-instructions.md](.github/instructions/testing-instructions.md) for detailed test writing guidelines, snapshots, and workflows.**
+**See [testing.instructions.md](.github/instructions/testing.instructions.md) for detailed test writing guidelines, snapshots, and workflows.**
 
 ### Running a Specific Analysis
 
@@ -160,7 +160,7 @@ After `runAnalysis()`, check:
 - Use existing QML files as examples for structure and style
 - Add default values to unit tests when adding new QML options
 
-**See [qml-instructions.md](.github/instructions/qml-instructions.md) for comprehensive QML controls reference, validation patterns, and UI conventions.**
+**See [inst.qml.instructions.md](.github/instructions/inst.qml.instructions.md) for comprehensive QML controls reference, validation patterns, and UI conventions.**
 
 ### R Backend Rules
 - R functions in `R/` directory called by analyses in `inst/Descriptions/`
@@ -169,7 +169,7 @@ After `runAnalysis()`, check:
 - Access `options` list via `options[["name"]]` notation to avoid partial matching
 - Follow CRAN guidelines for code structure and documentation
 
-**See [r-instructions.md](.github/instructions/r-instructions.md) for complete R function structure, jaspResults API, output components (tables/plots/containers/state), and coding conventions.**
+**See [R.instructions.md](.github/instructions/R.instructions.md) for complete R function structure, jaspResults API, output components (tables/plots/containers/state), and coding conventions.**
 
 ### Input Validation and Error Handling
 - **TARGETED VALIDATION ONLY**: Since `options` are validated in the GUI, R functions should NOT check user input validity except for specific cases
@@ -190,7 +190,7 @@ After `runAnalysis()`, check:
 - Use UTF-8 encoding for non-ASCII characters: `\u03B2` for beta
 - Double `%` characters in format strings: `gettextf("%s%% CI for Mean")`
 
-**See [translation-instructions.md](.github/instructions/translation-instructions.md) for comprehensive i18n guidelines including QML qsTr(), R gettext/gettextf/ngettext, formatting rules, and Weblate workflow.**
+**See [translation.instructions.md](.github/instructions/translation.instructions.md) for comprehensive i18n guidelines including QML qsTr(), R gettext/gettextf/ngettext, formatting rules, and Weblate workflow.**
 
 ## CI/CD Pipeline
 - GitHub Actions in `.github/workflows/unittests.yml` runs on every push

@@ -1,5 +1,6 @@
 ---
 applyTo: "**/R/*.R"
+description: "createJaspState caching, model fit patterns, metadata state, dynamic containers"
 ---
 
 # JASP State Management (createJaspState)
