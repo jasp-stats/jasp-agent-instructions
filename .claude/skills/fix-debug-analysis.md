@@ -1,19 +1,29 @@
----
-applyTo: "**/R/*.R"
-description: "Debugging JASP analysis errors and troubleshooting analysis failures via saveRDS state capture"
----
+# Fix & Debug JASP Analysis (MCP Session)
 
-# Debug JASP Analysis (MCP Session)
+Quick reference for debugging JASP analysis functions through MCP sessions.
 
-Quick reference for debugging JASP analysis functions through MCP sessions using state capture.
-
-**Note**: `browser()` and `recover()` require interactive R console and **do not work** through MCP's `btw_tool_run_r`. This skill documents the saveRDS() workflow, which is the only approach available for Claude-assisted debugging.
+**Note**: `browser()` and `recover()` require interactive R console and **do not work** through MCP's `btw_tool_run_r`.
 
 ---
 
-## 1) The saveRDS() Workflow
+## 1) Debugging Approaches
 
-### Overview
+There are two approaches, in order of preference:
+
+### Approach A: Code Inspection (try first)
+
+Many bugs — especially logic errors, missing branches, wrong conditions — are solvable by reading the code and tracing the control flow. This is faster and doesn't require instrumenting code.
+
+1. **Reproduce**: Bootstrap a `runAnalysis()` call (Step 0) and confirm the issue
+2. **Read**: Trace the code path from the entry-point function through the relevant helpers
+3. **Identify**: Look for logic errors — wrong conditions, missing option checks, incorrect branching
+4. **Fix**: Edit the source, hot-reload, and verify
+
+**Use this when**: Output is missing, wrong options are checked, a feature works in one analysis type but not another, UI options don't match R-side logic.
+
+### Approach B: saveRDS State Capture (escalation)
+
+When the bug depends on runtime values that can't be deduced from code reading alone.
 
 1. **Instrument**: Add saveRDS() before the error location
 2. **Capture**: Hot-reload and run analysis, copy debug path from console
@@ -21,9 +31,87 @@ Quick reference for debugging JASP analysis functions through MCP sessions using
 4. **Fix**: Develop and test fix using captured state
 5. **Verify**: Remove debug code, hot-reload, confirm fix works
 
+**Use this when**: Error depends on specific data values, unexpected NULL/type, dimension mismatches, or the code path is too complex to trace by reading.
+
 ---
 
-## 2) Step-by-Step Process
+## 2) Reproducing the Issue
+
+### Step 0: Bootstrap a Reproducible Analysis Run
+
+Before debugging, you need a working `runAnalysis()` call that reproduces the error. Choose the first applicable source:
+
+#### Option A: User provides a .jasp file
+
+```r
+jaspFile <- "path/to/file.jasp"
+opts     <- jaspTools::analysisOptions(jaspFile)
+dataset  <- jaspTools::extractDatasetFromJASPFile(jaspFile)
+encoded  <- jaspTools:::encodeOptionsAndDataset(opts, dataset)
+set.seed(1)
+results  <- jaspTools::runAnalysis("AnalysisName", encoded$dataset, encoded$options, encodedDataset = TRUE)
+```
+
+If the .jasp file contains multiple analyses, `analysisOptions()` returns a list — index with `[[1]]`, `[[2]]`, etc. Pick the analysis that matches the error context.
+
+#### Option B: Extract from existing unit tests (most common fallback)
+
+When no .jasp file is provided, **search test files first**. Test files contain pre-configured options and dataset references that are known to produce complete output.
+
+1. **Find the test file** for the analysis in `tests/testthat/`:
+   ```
+   grep -r "AnalysisName" tests/testthat/
+   ```
+
+2. **Determine the input pattern** used in the test. Tests use one of two patterns:
+
+   **Pattern 1 — .jasp example file** (look for `analysisOptions(jaspFile)` or `extractDatasetFromJASPFile`):
+   ```r
+   # Copy the loading code from the test, adjusting the path for non-test context
+   jaspFile <- file.path("examples", "Example Name.jasp")
+   opts     <- jaspTools::analysisOptions(jaspFile)[[1]]  # note: may need [[1]] for multi-analysis files
+   dataset  <- jaspTools::extractDatasetFromJASPFile(jaspFile)
+   encoded  <- jaspTools:::encodeOptionsAndDataset(opts, dataset)
+   set.seed(1)
+   results  <- jaspTools::runAnalysis("AnalysisName", encoded$dataset, encoded$options, encodedDataset = TRUE)
+   ```
+
+   **Pattern 2 — inline options** (look for `analysisOptions("AnalysisName")` with explicit option assignments):
+   ```r
+   # Copy the options setup from the test verbatim
+   options <- jaspTools::analysisOptions("AnalysisName")
+   options$dependent  <- "contNormal"    # copy from test
+   options$group      <- "contBinom"     # copy from test
+   # ... copy ALL option assignments from the test ...
+   set.seed(1)
+   results <- jaspTools::runAnalysis("AnalysisName", "debug.csv", options)
+   ```
+
+3. **Modify options** to match the bug-triggering scenario (e.g., enable/disable specific checkboxes).
+
+4. **Verify reproduction**: Check that the issue is reproduced — this could be a `"fatalError"` status, an error message in a specific output element, incorrect values, missing output, etc., depending on what the user reported.
+
+#### Option C: Build options from scratch (last resort)
+
+Only when no tests or examples exist:
+
+```r
+options <- jaspTools::analysisOptions("AnalysisName")
+# Set required inputs — check .robttCheckReady() or equivalent readiness function
+# to discover which options must be non-empty
+options$dependent <- "contNormal"
+options$group     <- "contBinom"
+set.seed(1)
+results <- jaspTools::runAnalysis("AnalysisName", "debug.csv", options)
+```
+
+**Tip**: `jaspTools::analysisOptions("AnalysisName")` returns all options with their QML defaults. Inspect it with `str(options)` to understand available options and their types.
+
+---
+
+## 3) saveRDS Workflow (Approach B)
+
+Use these steps when code inspection alone is insufficient and you need to examine runtime values.
 
 ### Step 1: Identify Error Location
 
@@ -132,15 +220,21 @@ Once fix logic works, implement it in the source file.
 ```r
 # Via btw_tool_run_r in MCP
 devtools::load_all()
+
 set.seed(1)
 results <- jaspTools::runAnalysis("AnalysisName", encoded$dataset, encoded$options, encodedDataset = TRUE)
 
-# Check status
+# Check overall status
 cat("Status:", results$status, "\n")
-# Should show: Status: complete
 ```
 
-4. Search for any remaining debug code before committing:
+4. **Verify the specific issue is resolved** — don't just check `results$status`:
+   - If the bug was missing output: confirm the output element now exists in `results$results`
+   - If the bug was wrong values: check the specific table/cell values
+   - If the bug was an error in a subcomponent: navigate to that component and verify no error
+   - If the bug was a crash: confirm status is `"complete"`
+
+5. Search for any remaining debug code before committing:
 
 ```bash
 grep -r "DEBUG: REMOVE" R/
@@ -149,7 +243,7 @@ grep -r "saveRDS.*tempdir" R/
 
 ---
 
-## 3) What to Save
+## 4) What to Save
 
 | Location | Objects to save | DON'T save |
 |----------|----------------|------------|
@@ -162,7 +256,7 @@ grep -r "saveRDS.*tempdir" R/
 
 ---
 
-## 4) Real-World Example
+## 5) Real-World Example
 
 **Error**: `jaspTable$addFootnote expects 'message' to be a string!`
 
@@ -233,7 +327,7 @@ grep -r "saveRDS.*tempdir" R/
 
 ---
 
-## 5) Advanced Techniques
+## 6) Advanced Techniques
 
 ### Conditional Saving
 
@@ -277,7 +371,7 @@ saveRDS(list(...), file.path(tempdir(), paste0("debug_", timestamp, ".rds")))
 
 ---
 
-## 6) Common Error Patterns
+## 7) Common Error Patterns
 
 ### Pattern 1: Unexpected NULL
 
@@ -321,7 +415,7 @@ saveRDS(list(container = container, index = i, length = length(container)), ...)
 
 ---
 
-## 7) Safety Checklist
+## 8) Safety Checklist
 
 Before committing code:
 
