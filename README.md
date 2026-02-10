@@ -45,6 +45,48 @@ When using AI agents with a JASP module, hand over your interactive R session to
 
 This enables the agent to access your loaded packages, environment objects, and run analyses interactively.
 
+### MCP Server Configuration
+
+AI agents require MCP (Model Context Protocol) server configuration to access R session tools. The configuration differs slightly between Claude Code and GitHub Copilot.
+
+#### Claude Code (.mcp.json)
+
+Create `.mcp.json` in the module root (machine-specific, add to `.gitignore`):
+
+```json
+{
+  "mcpServers": {
+    "r-mcptools": {
+      "type": "stdio",
+      "command": "Rscript",
+      "args": ["-e", "source('.claude/mcp-server.R')"]
+    }
+  }
+}
+```
+
+Or via CLI: `claude mcp add r-mcptools -- Rscript -e "source('.claude/mcp-server.R')"`
+
+#### GitHub Copilot (.vscode/mcp.json)
+
+Create `.vscode/mcp.json` in the module root (machine-specific, add to `.gitignore`):
+
+```jsonc
+{
+  "servers": {
+    "r-mcptools": {
+      "command": "Rscript",
+      "args": ["-e", "source('.claude/mcp-server.R')"]
+    }
+  }
+}
+```
+
+**Key differences:**
+- Claude Code: Uses `mcpServers` with `type: "stdio"` field
+- GitHub Copilot: Uses `servers` without type field
+- Both use the same `Rscript` command to launch `.claude/mcp-server.R`
+
 ## Contributing
 
 This repository is continuously updated as instruction files are refined and best practices evolve.
