@@ -45,27 +45,6 @@ When using AI agents with a JASP module, hand over your interactive R session to
 
 This enables the agent to access your loaded packages, environment objects, and run analyses interactively.
 
-## Repository Structure
-
-```
-.
-├── .github/
-│   ├── copilot-instructions.md          # Main GitHub Copilot instructions
-│   └── instructions/
-│       ├── R.instructions.md            # R backend development rules
-│       └── inst.qml.instructions.md     # QML interface development rules
-│
-└── .claude/
-    ├── CLAUDE.md                        # Claude configuration
-    ├── README.md                        # Claude setup guide
-    └── rules/
-        ├── r-instructions.md            # R development guidelines
-        ├── qml-instructions.md          # QML interface guidelines
-        ├── testing-instructions.md      # Testing best practices
-        ├── translation-instructions.md  # Internationalization rules
-        └── git-workflow.md              # Git workflow standards
-```
-
 ## Contributing
 
 This repository is continuously updated as instruction files are refined and best practices evolve.
