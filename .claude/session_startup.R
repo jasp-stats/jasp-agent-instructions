@@ -8,7 +8,11 @@
 options(cli.spinner = "line")
 
 # Fix locale issue with renv.lock files created on non-English systems
-Sys.setlocale("LC_ALL", "English_United States.utf8")
+if (.Platform$OS.type == "windows") {
+  Sys.setlocale("LC_ALL", "English_United States.utf8")
+} else {
+  Sys.setlocale("LC_ALL", "C.UTF-8")
+}
 
 renv::restore(prompt = FALSE)
 library(jaspTools)
