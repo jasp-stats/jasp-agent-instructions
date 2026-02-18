@@ -8,5 +8,5 @@ options(
 )
 
 btw::btw_mcp_server(
-  tools = btw::btw_tools("docs", "env", "run", , "search", "session")
+  tools = btw::btw_tools("docs", "env", "run", "search", "session")
 )
