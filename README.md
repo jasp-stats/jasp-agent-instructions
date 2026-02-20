@@ -27,6 +27,16 @@ For AI agents to function properly with JASP modules, ensure the following:
 
 ### R Session Handoff 
 
+The following R packages must be installed before using AI agents:
+
+- **btw**: Provides the MCP server and session registration (`btw::btw_mcp_session()`)
+- **mcptools**: Required by the MCP server for tool registration
+
+Install via:
+```r
+install.packages(c("btw", "mcptools"))
+```
+
 When using AI agents with a JASP module, hand over your interactive R session to enable live R code execution:
 
 1. In your R console (RStudio/Positron/radian), run:
