@@ -14,9 +14,15 @@ if (.Platform$OS.type == "windows") {
   Sys.setlocale("LC_ALL", "C.UTF-8")
 }
 
+# Install order matches container_entrypoint.sh:
+# 1. Install injected packages (btw, mcptools) first
+# 2. renv::restore() so lockfile-pinned versions win for shared deps
+# 3. Install the module + jaspTools (already handled by restore for deps)
+renv::install(c("btw", "mcptools"), prompt = FALSE)
 renv::restore(prompt = FALSE)
+renv::install(c(".", "jasp-stats/jaspTools"), prompt = FALSE)
 library(jaspTools)
-renv::install(".", prompt = FALSE)
+setupJaspTools()
 setPkgOption("module.dirs", ".")
 setPkgOption("reinstall.modules", FALSE)
 btw::btw_mcp_session()
