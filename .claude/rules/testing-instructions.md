@@ -32,6 +32,21 @@ testAll()
 testAnalysis("AnalysisName")
 ```
 
+**MCP timeout for large modules:** `agentTestAll()` can take 180-300+ seconds. If `btw_tool_run_r` times out, fall back to Bash:
+
+```bash
+Rscript --no-init-file -e '
+  renv::load()
+  library(jaspTools)
+  setupJaspTools(pathJaspDesktop="/opt/jasp-desktop", installJaspModules=FALSE, installJaspCorePkgs=FALSE, quiet=TRUE, force=TRUE)
+  setPkgOption("module.dirs", ".")
+  setPkgOption("reinstall.modules", FALSE)
+  agentTestAll()
+'
+```
+
+Do NOT retry via MCP after a timeout -- use the Bash fallback immediately.
+
 **Critical rules:**
 
 - Tests take 300+ seconds to complete
@@ -47,7 +62,7 @@ Each test file in `tests/testthat/` corresponds to an R analysis file:
 
 - `test-penalizedmetaanalysis.R` -> `R/penalizedmetaanalysis.R`
 - Test file name pattern: `test-<analysisname>.R`
-- Analysis names for `testAnalysis()` come from NAMESPACE exports (PascalCase)
+- Analysis names for `agentTestAnalysis()` come from NAMESPACE exports (PascalCase)
 
 ## 4) Writing Tests
 
@@ -129,13 +144,13 @@ results  <- jaspTools::runAnalysis("AnalysisName", encoded$dataset, encoded$opti
 
 ### Before making code changes
 
-Run `agentTestAll()` (or `testAll()`) via `btw_tool_run_r` to establish baseline -- all tests should pass.
+Run `agentTestAll()` via `btw_tool_run_r` to establish baseline -- all tests should pass.
 
 ### After making code changes
 
 1. Run `devtools::load_all()` to hot-reload R changes
-2. Run `agentTestAnalysis("AnalysisName")` (or `testAnalysis("AnalysisName")`) for quick iteration on the affected analysis
-3. Once the specific tests pass, run `agentTestAll()` (or `testAll()`) to check for regressions
+2. Run `agentTestAnalysis("AnalysisName")` for quick iteration on the affected analysis
+3. Once the specific tests pass, run `agentTestAll()` to check for regressions
 
 ### If tests fail
 

@@ -21,6 +21,7 @@ For comprehensive guidance on specific topics, see:
 - **[Testing & Test Writing](.claude/rules/testing-instructions.md)** - Test framework, snapshots, and test workflow
 - **[Translation (i18n)](.claude/rules/translation-instructions.md)** - gettext/gettextf/qsTr usage, formatting, plurals
 - **[Output Structure](.claude/rules/jasp-output-structure.md)** - Reading/testing serialized output (containers, tables, plots, state)
+- **[Git Workflow](.claude/rules/git-workflow.md)** - Commit message style, branch strategy, PR guidelines, git safety rules
 
 ## R Session via MCP
 
@@ -109,6 +110,7 @@ testAnalysis("AnalysisName")
 - Analysis names are PascalCase exports from NAMESPACE
 - Some tests skip on certain platforms (e.g., Windows) -- expected
 - Some stderr noise (ggplot messages, tryCatch errors) may leak through -- expected and minor
+- **MCP timeout:** If `btw_tool_run_r` times out on `agentTestAll()`, do NOT retry -- use the Bash fallback in [testing-instructions.md](.claude/rules/testing-instructions.md)
 
 **See [testing-instructions.md](.claude/rules/testing-instructions.md) for detailed test writing guidelines, snapshots, and workflows.**
 
@@ -135,6 +137,8 @@ results  <- jaspTools::runAnalysis("AnalysisName", encoded$dataset, encoded$opti
 The encoding step is required because JASP internally encodes variable names and options to resolve ambiguities (e.g., same variable used with different types).
 
 **From a user-provided .jasp file:** Use the same pattern above. This is the primary way to reproduce bugs reported by users.
+
+**NEVER instantiate jaspResults C++ objects directly** (e.g., `jaspResultsClass$new()`, `create_cpp_jaspResults()`, `jaspBase:::initJaspResults()`). These require JASP Desktop C++ initialization unavailable in headless R sessions. They crash with `Rcpp::not_initialized` or `Expecting an external pointer`. Always use `jaspTools::runAnalysis()` or `agentTestAll()` which handle initialization internally.
 
 ### Inspecting Results
 

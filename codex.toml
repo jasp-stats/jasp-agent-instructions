@@ -10,4 +10,5 @@ model_reasoning_summary = "concise"
 command = "Rscript"
 args = ["-e", "source('.claude/mcp-server.R')"]
 startup_timeout_sec = 60
+tool_timeout_sec = 600
 

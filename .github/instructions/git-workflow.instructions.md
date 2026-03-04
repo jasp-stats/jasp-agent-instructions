@@ -1,3 +1,10 @@
+---
+applyTo: "**"
+description: "Git workflow: commit style, branch strategy, PR guidelines, safety rules"
+---
+
+# Git Workflow Instructions
+
 ## Commit Message Style
 
 **Be extremely concise. Sacrifice grammar for concision.**

@@ -19,6 +19,7 @@ How Claude Code, OpenAI Codex CLI, and GitHub Copilot instruction files relate, 
 ```
 repo/
 ├── AGENTS.md                           # Codex main instructions
+├── codex.toml                          # Root-level Codex fallback (MCP + reasoning)
 ├── .mcp.json                           # Claude Code MCP (not committed)
 │
 ├── .claude/
@@ -126,6 +127,8 @@ description: "R function structure, validation, jaspResults API"
 command = "Rscript"
 args = ["-e", "source('.claude/mcp-server.R')"]
 ```
+
+**Note on root `codex.toml` vs `.codex/config.toml`:** Both exist intentionally. The root-level `codex.toml` is a fallback used by `container_entrypoint.sh` when Codex CLI is invoked from the repo root without a `.codex/` directory present. It contains only MCP config and reasoning settings. The `.codex/config.toml` is the full project config (sandbox mode, approval policy, project doc limit, MCP, reasoning) and takes precedence when the `.codex/` directory exists.
 
 **Skills** have different formats for the same content:
 
