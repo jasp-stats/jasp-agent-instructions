@@ -30,10 +30,12 @@ This project uses the `btw` MCP server (`.claude/mcp-server.R`) to provide a per
 
 ### Available MCP Tools
 
-Use these R-specific tools instead of Bash when possible:
+These are MCP tools — invoke them directly as tool calls, not as R functions or shell commands:
 
 | Tool | Use for |
 |------|---------|
+| `list_r_sessions` | Discover available R sessions (call first) |
+| `select_r_session` | Connect to a session from the list |
 | `btw_tool_run_r` | Execute R code in persistent session (variables persist between calls) |
 | `btw_tool_docs_help_page` | Look up R function documentation |
 | `btw_tool_docs_package_news` | Check package changelogs |
@@ -44,7 +46,7 @@ Use these R-specific tools instead of Bash when possible:
 | `btw_tool_session_platform_info` | Check R version and platform |
 | `btw_tool_session_check_package_installed` | Verify package availability |
 
-**Use Claude Code native tools** (Read, Edit, Write, Glob, Grep, Bash) for file editing, git operations, and file search -- they are faster than MCP equivalents.
+**Use native tools** (Read, Edit, Write, Glob, Grep, Bash) for file editing, git operations, and file search -- they are faster than MCP equivalents.
 
 ## Working Effectively
 

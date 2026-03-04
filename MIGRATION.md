@@ -109,7 +109,6 @@ description: "R function structure, validation, jaspResults API"
 **Main instruction files** (CLAUDE.md, AGENTS.md, copilot-instructions.md) are structurally identical but differ in:
 - Rule directory references (`.claude/rules/` vs `.codex/rules/` vs `.github/instructions/`)
 - MCP config notes (`.mcp.json` vs `config.toml` vs `.vscode/mcp.json`)
-- Platform-specific tool names ("Claude Code native tools" vs "Codex solver tools" vs "Copilot Code native tools")
 
 **MCP config format** is semantically identical but syntactically different:
 
