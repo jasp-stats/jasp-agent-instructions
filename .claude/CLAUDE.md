@@ -183,7 +183,7 @@ After `runAnalysis()`, check:
 
 ### Key Files to Check After Changes
 - Always check corresponding test file in `tests/testthat/` when modifying R functions
-- Update `inst/Upgrades.qml` when renaming QML options to maintain backward compatibility
+- For released analyses, update `inst/Upgrades.qml` when renaming QML options to maintain backward compatibility. For unreleased analyses, keep only the current QML/R names.
 
 ## Development Rules
 
@@ -195,6 +195,10 @@ After `runAnalysis()`, check:
 - QML interfaces in `inst/qml/` define user-facing options passed to R functions
 - Each analysis links: `inst/Description.qml/` -> `inst/qml/` -> `R/` functions
 - QML elements use `name` (camelCase internal) and `title`/`label` (user-facing)
+- QML `name` values are the exact R option API. When changing option names, update R reads and dependency vectors to the current names; do not keep old aliases for unreleased analyses.
+- Keep maintainable imported QML components when they reduce duplication/clutter. Do not inline or flatten QML solely because `jaspTools::analysisOptions()` cannot see imported components or dynamic bindings.
+- Verify QML/R option contracts with source-aware checks across the main QML file and imported components; when tests need defaults tooling cannot derive, pass explicit GUI-equivalent options instead of adding R defaults.
+- Preserve dynamic `DropDown.values` when they are the clearer GUI. Use static values plus `enabledOptions` only when that is the intended UX, not as a tooling workaround.
 - Document QML elements using `info` property for help generation
 - Use existing QML files as examples for structure and style
 - Add default values to unit tests when adding new QML options
@@ -206,6 +210,8 @@ After `runAnalysis()`, check:
 - Use camelCase for all function and variable names
 - NEVER use `library()` or `require()` - use `package::function()` syntax
 - Access `options` list via `options[["name"]]` notation to avoid partial matching
+- Treat GUI options as a strict contract: do not add R-side normalization, alias maps, compatibility layers, or backup defaults for missing QML options in unreleased work. Missing/disconnected options should fail so the QML/R mismatch is fixed.
+- For checkbox options, use `if (options[["flag"]])`, not `isTRUE(options[["flag"]])`; `isTRUE()` masks missing options.
 - Follow CRAN guidelines for code structure and documentation
 
 **See [r-instructions.md](.claude/rules/r-instructions.md) for complete R function structure, jaspResults API, output components (tables/plots/containers/state), and coding conventions.**
@@ -257,7 +263,7 @@ After `runAnalysis()`, check:
 1. Update R function maintaining existing interface
 2. Update QML if adding/changing options
 3. Update unit tests and expected results
-4. Add upgrade mapping to `inst/Upgrades.qml` if renaming options
+4. Add upgrade mapping to `inst/Upgrades.qml` if renaming options for a released analysis
 5. Run tests: `agentTestAll()` (NEVER CANCEL, 300+ seconds)
 
 ### Detailed Development Process
