@@ -22,6 +22,7 @@ For comprehensive guidance on specific topics, see:
 - **[Translation (i18n)](.github/instructions/translation.instructions.md)** - gettext/gettextf/qsTr usage, formatting, plurals
 - **[Output Structure](.github/instructions/jasp-output-structure.instructions.md)** - Reading/testing serialized output (containers, tables, plots, state)
 - **[Debug Analysis](.github/instructions/debug-analysis.instructions.md)** - Debugging JASP analyses via saveRDS() state capture in MCP sessions
+- **[Math & Literature Tools](.github/instructions/math-and-literature-tools.instructions.md)** - StatsVault literature search, Wolfram/Mathematica, Python symbolic and arbitrary-precision numerics. Machine-level: verify before relying
 
 ## R Session via MCP
 

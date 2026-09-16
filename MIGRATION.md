@@ -8,10 +8,10 @@ How Claude Code, OpenAI Codex CLI, and GitHub Copilot instruction files relate, 
 |---------|-------------|-----------|----------------|
 | **Main instructions** | `.claude/CLAUDE.md` | `AGENTS.md` (repo root) | `.github/copilot-instructions.md` |
 | **Rule/instruction dir** | `.claude/rules/*.md` | `.codex/rules/*.md` | `.github/instructions/*.md` |
-| **Skills** | `.claude/skills/*.md` | `.agents/skills/*/SKILL.md` | n/a |
+| **Skills** | `.claude/skills/<name>/SKILL.md` | `.agents/skills/<name>/SKILL.md` | n/a |
 | **MCP config** | `.mcp.json` (JSON) | `.codex/config.toml` (TOML) | `.vscode/mcp.json` (JSON) |
 | **Execution policy** | n/a (instruction-based) | `.codex/rules/default.rules` (Starlark) | n/a |
-| **Hooks** | `.claude/hooks/*.js` | n/a (`notify` only) | n/a |
+| **Hooks** | `.claude/hooks/*.js`, `*.py` | n/a (`notify` only) | n/a |
 | **Project config** | `.claude/settings.local.json` | `.codex/config.toml` | `.vscode/settings.json` |
 
 ## Directory Layout

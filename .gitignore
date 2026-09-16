@@ -1,0 +1,5 @@
+# Agent-side logs and state written by the Stop hooks and the advisor skill
+.claude/logs/
+
+# Python bytecode from the agent-side scripts
+__pycache__/

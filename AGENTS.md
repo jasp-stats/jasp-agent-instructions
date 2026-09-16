@@ -22,6 +22,7 @@ For comprehensive guidance on specific topics, read the corresponding rule file 
 - **[Translation (i18n)](.codex/rules/translation-instructions.md)** - gettext/gettextf/qsTr usage, formatting, plurals. Read when working on `R/*.R`, `inst/qml/*.qml`, or `po/`.
 - **[Output Structure](.codex/rules/jasp-output-structure.md)** - Reading/testing serialized output (containers, tables, plots, state). Read when working on `tests/testthat/*.R` or `R/*.R`.
 - **[Git Workflow](.codex/rules/git-workflow.md)** - Commit conventions, branch strategy, PR guidelines. Read before any git operations.
+- **[Math & Literature Tools](.codex/rules/math-and-literature-tools.md)** - StatsVault literature search, Wolfram/Mathematica, Python symbolic and arbitrary-precision numerics. Machine-level: verify before relying.
 
 ## R Session via MCP
 

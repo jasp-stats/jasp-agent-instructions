@@ -25,9 +25,10 @@ repo/
 │   ├── CLAUDE.md                       # Claude Code main instructions
 │   ├── mcp-server.R                    # Shared MCP server script (all platforms)
 │   ├── session_startup.R               # Shared R bootstrap
-│   ├── settings.local.json             # Claude local config (not committed)
+│   ├── settings.local.json             # Claude config incl. Stop hooks (committed)
 │   ├── hooks/
-│   │   └── block-test-edits.js         # Claude PreToolUse safety hook
+│   │   ├── block-test-edits.js         # Claude PreToolUse safety hook
+│   │   └── stop-audit.py               # Stop hook: independent turn audit
 │   ├── rules/                          # 12 rule files (canonical source of truth)
 │   │   ├── r-instructions.md
 │   │   ├── qml-instructions.md
@@ -42,7 +43,8 @@ repo/
 │   │   ├── jasp-containers-and-errors.md
 │   │   └── jasp-output-structure.md
 │   └── skills/
-│       └── fix-debug-analysis.md       # Claude debugging skill
+│       ├── fix-debug-analysis.md       # Claude debugging skill
+│       └── advisor/SKILL.md            # Consult a stronger model when stuck
 │
 ├── .codex/
 │   ├── config.toml                     # Codex MCP servers + execution policy
@@ -52,8 +54,10 @@ repo/
 │
 ├── .agents/
 │   └── skills/
-│       └── fix-debug-analysis/
-│           └── SKILL.md                # Codex debugging skill (YAML frontmatter)
+│       ├── fix-debug-analysis/
+│       │   └── SKILL.md                # Codex debugging skill (YAML frontmatter)
+│       └── advisor/
+│           └── SKILL.md                # Advisor skill (YAML frontmatter)
 │
 ├── .github/
 │   ├── copilot-instructions.md         # GitHub Copilot main instructions
