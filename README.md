@@ -43,8 +43,10 @@ repo/
 │   │   ├── jasp-containers-and-errors.md
 │   │   └── jasp-output-structure.md
 │   └── skills/
-│       ├── fix-debug-analysis.md       # Claude debugging skill
-│       └── advisor/SKILL.md            # Consult a stronger model when stuck
+│       ├── fix-debug-analysis/
+│       │   └── SKILL.md                # Claude debugging skill
+│       └── advisor/
+│           └── SKILL.md                # Consult a stronger model when stuck
 │
 ├── .codex/
 │   ├── config.toml                     # Codex MCP servers + execution policy
