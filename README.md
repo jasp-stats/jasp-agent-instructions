@@ -10,9 +10,9 @@ Three platforms are supported, each with its own configuration directory:
 
 | Platform | Main instructions | Rules directory | Config |
 | -------- | ----------------- | --------------- | ------ |
-| **Claude Code** | `.claude/CLAUDE.md` | `.claude/rules/` | `.mcp.json` |
+| **Claude Code** | `.claude/CLAUDE.md` | `.claude/rules/` | `.claude/settings.local.json` |
 | **OpenAI Codex CLI** | `AGENTS.md` | `.codex/rules/` | `.codex/config.toml` |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | `.github/instructions/` | `.vscode/mcp.json` |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | `.github/instructions/` | `.vscode/settings.json` |
 
 ## Repository Structure
 
@@ -23,7 +23,7 @@ repo/
 │
 ├── .claude/
 │   ├── CLAUDE.md                       # Claude Code main instructions
-│   ├── mcp-server.R                    # Shared MCP server script (all platforms)
+│   ├── r-preamble.R                    # Per-call R bootstrap (all platforms)
 │   ├── session_startup.R               # Shared R bootstrap
 │   ├── settings.local.json             # Claude config incl. Stop hooks (committed)
 │   ├── hooks/
@@ -49,7 +49,7 @@ repo/
 │           └── SKILL.md                # Consult a stronger model when stuck
 │
 ├── .codex/
-│   ├── config.toml                     # Codex MCP servers + execution policy
+│   ├── config.toml                     # Codex sandbox, approval, reasoning
 │   └── rules/                          # 12 rule files (no frontmatter) + Starlark policy
 │       ├── default.rules               # Execution policy (forbid force-push, etc.)
 │       └── *.md                        # Same rule body as .claude/rules/
@@ -67,20 +67,17 @@ repo/
 │       └── *.instructions.md           # Same rule body as .claude/rules/
 │
 └── .vscode/
-    └── mcp.json                        # Copilot MCP config (not committed)
 ```
 
 ## Usage
 
 To use these instructions in a JASP module, copy **all** of the following into your module root:
 
-- `.claude/` — shared R scripts (`mcp-server.R`, `session_startup.R`) and Claude Code rules. **Always required**, even if you only use Copilot or Codex, because all platform MCP configs reference these scripts.
+- `.claude/` — shared R scripts (`r-preamble.R`, `session_startup.R`), Claude Code rules, hooks and skills. **Always required**, even if you only use Copilot or Codex, because all platforms use these scripts.
 - `.codex/` — OpenAI Codex CLI config and rules
 - `.agents/` — cross-platform skills (e.g., `fix-debug-analysis`)
 - `.github/` — GitHub Copilot instructions
 - `AGENTS.md` — Codex CLI main instructions
-
-Then create the platform-specific MCP config file(s) for the agents you use (see [MCP Server Configuration](#mcp-server-configuration) below). These are machine-specific and should not be committed.
 
 The AI assistants will automatically detect and use these instructions when working in your module.
 
@@ -90,89 +87,27 @@ For AI agents to function properly with JASP modules, ensure the following:
 
 ### System PATH Requirements
 
-- **Rscript**: Must be accessible from PATH for R session management and MCP server execution
+- **Rscript**: Must be accessible from PATH; agents call R directly
+- **python**: Required by the Claude Code Stop hooks and the advisor skill
 - **qml**: Qt's qml tools (specifically `qmllint`) must be on PATH for QML validation and linting
 
-### R Packages
+### R Setup
 
-The following R packages must be installed before using AI agents:
+Run once per checkout:
 
-- **btw**: Provides the MCP server and session registration (`btw::btw_mcp_session()`)
-- **mcptools**: Required by the MCP server for tool registration
-
-```r
-install.packages(c("btw", "mcptools"))
+```bash
+Rscript --no-init-file -e 'source(".claude/session_startup.R")'
 ```
 
-### R Session Handoff
+This restores dependencies via `renv::restore()`, installs the module and
+jaspTools, and configures `module.dirs`.
 
-When using AI agents with a JASP module, hand over your interactive R session to enable live R code execution:
+Thereafter agents call R directly. Every `Rscript` call is a fresh process, so
+each one sources the shared bootstrap:
 
-1. In your R console (RStudio/Positron/radian), run:
-
-   ```r
-   source(".claude/session_startup.R")
-   ```
-
-2. This script will:
-   - Configure locale and spinner settings
-   - Restore dependencies via `renv::restore()`
-   - Install the module locally
-   - Configure jaspTools
-   - Register the session with `btw::btw_mcp_session()`
-
-3. AI agents connect via `list_r_sessions` / `select_r_session` and execute R code in your live session
-
-This enables the agent to access your loaded packages, environment objects, and run analyses interactively.
-
-## MCP Server Configuration
-
-AI agents require MCP (Model Context Protocol) server configuration to access R session tools. All three platforms use the same shared `mcp-server.R` script but with different config file formats. These config files are machine-specific and should be added to `.gitignore`.
-
-### Claude Code (`.mcp.json`)
-
-Create `.mcp.json` in the module root:
-
-```json
-{
-  "mcpServers": {
-    "r-mcptools": {
-      "type": "stdio",
-      "command": "Rscript",
-      "args": ["-e", "source('.claude/mcp-server.R')"]
-    }
-  }
-}
+```bash
+Rscript --no-init-file -e 'source(".claude/r-preamble.R"); agentTestAll()'
 ```
-
-Or via CLI: `claude mcp add r-mcptools -- Rscript -e "source('.claude/mcp-server.R')"`
-
-### OpenAI Codex CLI (`.codex/config.toml`)
-
-The Codex config is committed to the repo (sandbox and approval settings are not machine-specific):
-
-```toml
-[mcp_servers.r-mcptools]
-command = "Rscript"
-args = ["-e", "source('.claude/mcp-server.R')"]
-```
-
-### GitHub Copilot (`.vscode/mcp.json`)
-
-Create `.vscode/mcp.json` in the module root:
-
-```json
-{
-  "servers": {
-    "r-mcptools": {
-      "command": "Rscript",
-      "args": ["-e", "source('.claude/mcp-server.R')"]
-    }
-  }
-}
-```
-
-All three use the same `Rscript` command to launch `.claude/mcp-server.R`.
 
 ## Skills
 
@@ -200,7 +135,6 @@ Quick sync checklist when updating instructions:
 
 - [ ] Rule body text is identical across `.claude/rules/`, `.codex/rules/`, `.github/instructions/`
 - [ ] Main instruction files reference the correct rule directory for their platform
-- [ ] MCP server list matches across `.mcp.json`, `.codex/config.toml`, `.vscode/mcp.json`
 - [ ] New rules are linked in all three main instruction files
 - [ ] Skills exist in both `.claude/skills/` and `.agents/skills/`
 - [ ] Execution policy in `.codex/rules/default.rules` reflects any new safety constraints

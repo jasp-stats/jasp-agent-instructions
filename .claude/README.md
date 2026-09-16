@@ -17,8 +17,11 @@ These files are automatically loaded when Claude Code starts, providing context 
 .claude/
 ├── CLAUDE.md                          # Main project instructions (always loaded)
 ├── README.md                          # This file
-├── mcp-server.R                       # MCP server startup script (R session tools)
-├── settings.local.json                # Local Claude Code settings (not committed)
+├── r-preamble.R                       # Per-call R bootstrap
+├── session_startup.R                  # One-time module + jaspTools install
+├── hooks/                             # PreToolUse and Stop hooks
+├── skills/                            # advisor, fix-debug-analysis
+├── settings.local.json                # Claude Code settings, incl. Stop hooks
 └── rules/                             # Path-specific rules
     ├── r-instructions.md              # R backend guidelines (**/R/*.R)
     ├── qml-instructions.md            # QML interface guidelines (**/inst/qml/*.qml)
@@ -27,43 +30,23 @@ These files are automatically loaded when Claude Code starts, providing context 
     └── translation-instructions.md    # i18n/l10n guidelines
 ```
 
-## MCP Server Setup
+## Running R
 
-The `.claude/mcp-server.R` script configures the `btw` MCP server for JASP module development. It:
+Agents call R directly -- every `Rscript` call is a fresh process:
 
-1. Enables `btw_tool_run_r` for R code execution in a persistent session
-2. Fixes `cli.spinner` option for testthat compatibility in the evaluate context
-3. Exposes btw tool groups: docs, env, run, search, session
-
-The user sets up their R session, then registers it via `btw::btw_mcp_session()`. Claude connects with `list_r_sessions` / `select_r_session` and executes R code in the user's session.
-
-### Configuration
-
-The MCP server is configured via `.mcp.json` in the module root (NOT committed to git). To set up:
-
-```json
-{
-  "mcpServers": {
-    "r-mcptools": {
-      "type": "stdio",
-      "command": "Rscript",
-      "args": ["-e", "source('.claude/mcp-server.R')"]
-    }
-  }
-}
+```bash
+Rscript --no-init-file -e 'source(".claude/r-preamble.R"); agentTestAll()'
 ```
 
-Or via CLI: `claude mcp add r-mcptools -- Rscript -e "source('.claude/mcp-server.R')"`
+`r-preamble.R` loads the project library and configures jaspTools.
+`session_startup.R` does the one-time install and is run once per checkout.
 
-### Connecting an Interactive R Session
+## Turn Discipline and Advisor
 
-To route MCP tool calls to your interactive R session (RStudio/Positron/radian):
-
-```r
-btw::btw_mcp_session()
-```
-
-This gives Claude Code access to your loaded objects and environment.
+`settings.local.json` registers two `Stop` hooks: a self-check checklist and
+`hooks/stop-audit.py`, an independent audit of the turn by a separate
+`claude -p` session. Logs land in `logs/` (gitignored). `skills/advisor/`
+consults a stronger model when genuinely stuck.
 
 ## How It Works
 
@@ -88,10 +71,9 @@ paths:
 To use these instructions in another JASP module:
 
 1. Copy the `.claude/` directory to the target module
-2. Create a `.mcp.json` in the module root (see Configuration above)
+2. Run the one-time setup: `Rscript --no-init-file -e 'source(".claude/session_startup.R")'`
 3. Adjust the `Rscript` command path if needed for your system
-4. The `.mcp.json` file should be added to `.gitignore` (machine-specific paths)
-5. The `.claude/mcp-server.R` script is portable and can be committed
+4. Add `.claude/logs/` to the module `.gitignore`
 
 ## Personal Preferences
 

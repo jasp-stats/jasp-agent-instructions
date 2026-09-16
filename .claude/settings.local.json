@@ -4,6 +4,7 @@
       "Bash(where:*)",
       "Bash(grep:*)",
       "Bash(Rscript:*)",
+      "Bash(R:*)",
       "Bash(find:*)",
       "Bash(python:*)",
       "Bash(python3:*)",
@@ -12,17 +13,6 @@
       "WebFetch(domain:gadenbuie.r-universe.dev)",
       "WebFetch(domain:ellmer.tidyverse.org)",
       "WebFetch(domain:github.com)",
-      "mcp__r-mcptools__btw_tool_session_platform_info",
-      "mcp__r-mcptools__btw_tool_session_package_info",
-      "mcp__r-mcptools__btw_tool_session_check_package_installed",
-      "mcp__r-mcptools__btw_tool_files_list_files",
-      "mcp__r-mcptools__btw_tool_git_status",
-      "mcp__r-mcptools__list_r_sessions",
-      "mcp__r-mcptools__select_r_session",
-      "mcp__r-mcptools__btw_tool_docs_available_vignettes",
-      "mcp__r-mcptools__btw_tool_docs_vignette",
-      "mcp__r-mcptools__btw_tool_docs_help_page",
-      "mcp__r-mcptools__btw_tool_run_r",
       "mcp__markitdown__convert_to_markdown"
     ]
   },
@@ -46,7 +36,7 @@
             "shell": "bash",
             "statusMessage": "Running stop self-check",
             "timeout": 10,
-            "command": "if grep -q '\"stop_hook_active\"[^,}]*true'; then exit 0; fi; printf '%s' '{\"decision\":\"block\",\"reason\":\"Stop self-check (fires once per turn). (1) FINISH THE WHOLE TASK. Never stop because the session ran long or the remaining work is large - there is no session budget to preserve. Only an unresolved maintainer decision, a hard failure, or a missing permission justify ending with work outstanding. (2) Name every outstanding item and its specific blocker in the final message; nothing should need recovering by rereading the conversation. (3) Tests actually ran and real results are reported - run them in the R session rather than assuming, and never weaken an expectation or refresh a snapshot to make something pass. (4) Test files are human-owned: fix the source, not the test. (5) Code, QML, translations and the rule files under .claude/rules and .codex/rules are consistent - see MIGRATION.md when a rule file changes. (6) Work is committed on a feature branch, never main, with a concise type: message per .claude/rules/git-workflow.md. If all of that already holds, say so in one line and stop.\"}'"
+            "command": "if grep -q '\"stop_hook_active\"[^,}]*true'; then exit 0; fi; printf '%s' '{\"decision\":\"block\",\"reason\":\"Stop self-check (fires once per turn). (1) FINISH THE WHOLE TASK. Never stop because the session ran long or the remaining work is large - there is no session budget to preserve. Only an unresolved maintainer decision, a hard failure, or a missing permission justify ending with work outstanding. (2) Name every outstanding item and its specific blocker in the final message; nothing should need recovering by rereading the conversation. (3) Tests actually ran and real results are reported - run them with Rscript rather than assuming, and never weaken an expectation or refresh a snapshot to make something pass. Tests take minutes; never cancel them. (4) Test files are human-owned: fix the source, not the test. (5) Code, QML, translations and the rule files under .claude/rules and .codex/rules are consistent - see MIGRATION.md when a rule file changes. (6) Work is committed on a feature branch, never main, with a concise type: message per .claude/rules/git-workflow.md. If all of that already holds, say so in one line and stop.\"}'"
           },
           {
             "type": "command",
@@ -59,9 +49,7 @@
       }
     ]
   },
-  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "r-mcptools",
     "markitdown"
   ]
 }

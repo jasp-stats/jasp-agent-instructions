@@ -24,50 +24,44 @@ For comprehensive guidance on specific topics, read the corresponding rule file 
 - **[Git Workflow](.codex/rules/git-workflow.md)** - Commit conventions, branch strategy, PR guidelines. Read before any git operations.
 - **[Math & Literature Tools](.codex/rules/math-and-literature-tools.md)** - StatsVault literature search, Wolfram/Mathematica, Python symbolic and arbitrary-precision numerics. Machine-level: verify before relying.
 
-## R Session via MCP
+## Running R
 
-This project uses the `btw` MCP server (`.claude/mcp-server.R`) to provide a persistent R session via `btw_tool_run_r`. The MCP server config is in `.codex/config.toml` (project-scoped) and should NOT be committed to git.
+Agents call R directly. Every `Rscript` call is a fresh process, so source
+the preamble first:
 
-**Session handoff:** The user sets up their R session (RStudio/Positron/radian), runs `btw::btw_mcp_session()`, and hands it over. Connect via `list_r_sessions` / `select_r_session`. All `btw_tool_run_r` calls then execute in the user's session with full access to loaded packages and objects. The following R packages are required for the mcp server: `btw`, `mcptools`.
+```bash
+Rscript --no-init-file -e 'source(".claude/r-preamble.R"); agentTestAll()'
+```
 
-### Available MCP Tools
+`.claude/r-preamble.R` loads the project library (`renv::load()`) and configures
+jaspTools. Run the one-time setup first, once per checkout:
 
-Use these R-specific tools instead of shell commands when possible:
+```bash
+Rscript --no-init-file -e 'source(".claude/session_startup.R")'
+```
 
-| Tool | Use for |
-|------|---------|
-| `btw_tool_run_r` | Execute R code in persistent session (variables persist between calls) |
-| `btw_tool_docs_help_page` | Look up R function documentation |
-| `btw_tool_docs_package_news` | Check package changelogs |
-| `btw_tool_docs_available_vignettes` | Find package vignettes |
-| `btw_tool_env_describe_environment` | Inspect objects in the R session |
-| `btw_tool_env_describe_data_frame` | Inspect data frame structure |
-| `btw_tool_search_packages` | Search CRAN for packages |
-| `btw_tool_session_platform_info` | Check R version and platform |
-| `btw_tool_session_check_package_installed` | Verify package availability |
-
-**Use Codex native tools** (shell, file read/write, apply_patch, search) for file editing, git operations, and file search -- they are faster than MCP equivalents.
+Nothing persists between calls, so make each invocation self-contained. For
+anything longer than a line or two, write a scratch `.R` file and run that
+instead of fighting shell quoting. Tests take minutes -- never cancel them.
 
 ## Working Effectively
 
-### Session Setup (done by user)
+### Session Setup (once per checkout)
 
-At the start of a session, check for a connected R session via `list_r_sessions`. If none is available, **prompt the user** to run in their interactive R console:
-
-```r
-source(".claude/session_startup.R")
+```bash
+Rscript --no-init-file -e 'source(".claude/session_startup.R")'
 ```
 
-This restores dependencies, installs the module, configures jaspTools, and registers the session. Then connect via `list_r_sessions` / `select_r_session`.
+Restores renv, installs the module and jaspTools, sets `module.dirs`.
 
 ### Hot-Reload After Code Changes
 
-- **R code only changed:** `devtools::load_all()` via `btw_tool_run_r`
+- **R code only changed:** `devtools::load_all()` inside the Rscript call
 - **QML, dependencies, or imports changed:** `renv::install(".", prompt = FALSE)`
 
 ### Running Tests
 
-Run via `btw_tool_run_r` in the persistent session:
+Run via Rscript, sourcing the preamble first:
 
 **Agent-optimized** (preferred -- compact output, returns queryable result object):
 
@@ -109,7 +103,7 @@ testAnalysis("AnalysisName")
 - Analysis names are PascalCase exports from NAMESPACE
 - Some tests skip on certain platforms (e.g., Windows) -- expected
 - Some stderr noise (ggplot messages, tryCatch errors) may leak through -- expected and minor
-- **MCP timeout:** If `btw_tool_run_r` times out on `agentTestAll()`, do NOT retry -- use the Bash fallback in [testing-instructions.md](.codex/rules/testing-instructions.md)
+- **Long runs:** `agentTestAll()` takes 180-300+ seconds. Never cancel it; see [testing-instructions.md](.codex/rules/testing-instructions.md)
 
 **See [testing-instructions.md](.codex/rules/testing-instructions.md) for detailed test writing guidelines, snapshots, and workflows.**
 
@@ -171,13 +165,13 @@ After `runAnalysis()`, check:
 ├── examples/                    # Example .jasp files for testing
 ├── tests/testthat/              # Unit tests using jaspTools
 ├── .codex/                      # Codex CLI instructions and config
-│   ├── config.toml              # MCP servers, sandbox, approval settings
+│   ├── config.toml              # Sandbox, approval and reasoning settings
 │   ├── rules/                   # Rule files (referenced from AGENTS.md)
 │   └── README.md                # Codex CLI setup documentation
 ├── .agents/                     # Cross-platform agent skills
 │   └── skills/                  # Skills (debugging, etc.)
-├── .claude/                     # Claude Code instructions and MCP server
-│   ├── mcp-server.R             # MCP server startup script (shared)
+├── .claude/                     # Claude Code instructions, hooks and skills
+│   ├── r-preamble.R             # Per-call R bootstrap (shared)
 │   └── session_startup.R        # R session bootstrap (shared)
 ├── .github/workflows/           # CI/CD automation
 ├── DESCRIPTION                  # R package metadata

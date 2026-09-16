@@ -7,7 +7,7 @@ This directory contains project-specific configuration for OpenAI Codex CLI.
 ```
 .codex/
 ├── README.md                          # This file
-├── config.toml                        # MCP servers, sandbox, approval settings
+├── config.toml                        # Sandbox, approval, reasoning settings
 └── rules/
     ├── default.rules                  # Starlark execution policy (git safety)
     ├── r-instructions.md              # R backend guidelines
@@ -35,21 +35,19 @@ This directory contains project-specific configuration for OpenAI Codex CLI.
 
 On first launch, Codex prompts to trust the project. Accept to load `.codex/config.toml` and `.codex/rules/`.
 
-### 2. MCP Server Configuration
+### 2. R Setup
 
-MCP servers are configured in `.codex/config.toml` and load automatically. The R MCP server uses the shared script at `.claude/mcp-server.R`.
+Once per checkout:
 
-### 3. R Session Setup
-
-Before starting a Codex session, run in your interactive R console:
-
-```r
-source(".claude/session_startup.R")
+```bash
+Rscript --no-init-file -e 'source(".claude/session_startup.R")'
 ```
 
-This restores dependencies, installs the module, configures jaspTools, and registers the session. Then connect via `list_r_sessions` / `select_r_session` in Codex.
+This restores dependencies, installs the module and configures jaspTools.
 
-### 4. Using Skills
+Thereafter call R directly, sourcing `.claude/r-preamble.R` in each `Rscript` call.
+
+### 3. Using Skills
 
 The `fix-debug-analysis` skill is available at `.agents/skills/fix-debug-analysis/SKILL.md`. Invoke explicitly via `$fix-debug-analysis` or let Codex auto-trigger it when debugging tasks are detected.
 
@@ -61,7 +59,7 @@ The `fix-debug-analysis` skill is available at `.agents/skills/fix-debug-analysi
 
 **Execution policy** in `.codex/rules/default.rules` uses Starlark syntax to gate shell commands (e.g., forbid force-push, prompt before push).
 
-**config.toml** configures MCP servers, sandbox mode, and approval policy. Shared between Codex CLI and the IDE extension.
+**config.toml** configures sandbox mode, approval policy and reasoning. Shared between Codex CLI and the IDE extension.
 
 ## Differences from Claude Code
 
@@ -69,10 +67,9 @@ The `fix-debug-analysis` skill is available at `.agents/skills/fix-debug-analysi
 |---------|--------------------------|------------------------|
 | Main instructions | `CLAUDE.md` (auto-loaded) | `AGENTS.md` (auto-loaded) |
 | Rule files | `.claude/rules/*.md` with `paths:` frontmatter (auto-scoped) | `.codex/rules/*.md` (referenced explicitly from AGENTS.md) |
-| Skills | `.claude/skills/*.md` | `.agents/skills/*/SKILL.md` |
-| MCP config | `.mcp.json` (JSON) | `.codex/config.toml` (TOML) |
+| Skills | `.claude/skills/<name>/SKILL.md` | `.agents/skills/<name>/SKILL.md` |
 | Permissions | `settings.local.json` (granular per-tool) | `config.toml` sandbox + approval |
-| Hooks | `hooks/block-test-edits.js` (PreToolUse) | Not available (instruction-only) |
+| Hooks | `hooks/*.js`, `*.py` (PreToolUse, Stop) | Not available (instruction-only) |
 | Execution policy | Not available | `.codex/rules/default.rules` (Starlark) |
 | Config format | JSON | TOML |
 
@@ -81,5 +78,4 @@ The `fix-debug-analysis` skill is available at `.agents/skills/fix-debug-analysi
 1. Copy `AGENTS.md` to the target module root
 2. Copy `.codex/` directory to the target module
 3. Copy `.agents/` directory to the target module
-4. The `.claude/mcp-server.R` and `.claude/session_startup.R` scripts are shared and should already exist
-5. Adjust paths in `config.toml` if the MCP server script location differs
+4. The `.claude/r-preamble.R` and `.claude/session_startup.R` scripts are shared and should already exist

@@ -21,55 +21,47 @@ For comprehensive guidance on specific topics, see:
 - **[Testing & Test Writing](.github/instructions/testing.instructions.md)** - Test framework, snapshots, and test workflow
 - **[Translation (i18n)](.github/instructions/translation.instructions.md)** - gettext/gettextf/qsTr usage, formatting, plurals
 - **[Output Structure](.github/instructions/jasp-output-structure.instructions.md)** - Reading/testing serialized output (containers, tables, plots, state)
-- **[Debug Analysis](.github/instructions/debug-analysis.instructions.md)** - Debugging JASP analyses via saveRDS() state capture in MCP sessions
+- **[Debug Analysis](.github/instructions/fix-debug-analysis.instructions.md)** - Debugging JASP analyses via code inspection and saveRDS() state capture
 - **[Math & Literature Tools](.github/instructions/math-and-literature-tools.instructions.md)** - StatsVault literature search, Wolfram/Mathematica, Python symbolic and arbitrary-precision numerics. Machine-level: verify before relying
 
-## R Session via MCP
+## Running R
 
-This project uses the `btw` MCP server (`.claude/mcp-server.R`) to provide a persistent R session via `btw_tool_run_r`. The MCP server config (`.mcp.json`) is module-specific and NOT committed to git.
+Agents call R directly. Every `Rscript` call is a fresh process, so source
+the preamble first:
 
-**Session handoff:** The user sets up their R session (RStudio/Positron/radian), runs `btw::btw_mcp_session()`, and hands it over. Connect via `list_r_sessions` / `select_r_session`. All `btw_tool_run_r` calls then execute in the user's session with full access to loaded packages and objects. The following R packages are required for the mcp server: `btw`, `mcptools`.  
+```bash
+Rscript --no-init-file -e 'source(".claude/r-preamble.R"); agentTestAll()'
+```
 
-### Available MCP Tools
+`.claude/r-preamble.R` loads the project library (`renv::load()`) and configures
+jaspTools. Run the one-time setup first, once per checkout:
 
-These are MCP tools — invoke them directly as tool calls, not as R functions or shell commands:
+```bash
+Rscript --no-init-file -e 'source(".claude/session_startup.R")'
+```
 
-| Tool | Use for |
-|------|---------|
-| `list_r_sessions` | Discover available R sessions (call first) |
-| `select_r_session` | Connect to a session from the list |
-| `btw_tool_run_r` | Execute R code in persistent session (variables persist between calls) |
-| `btw_tool_docs_help_page` | Look up R function documentation |
-| `btw_tool_docs_package_news` | Check package changelogs |
-| `btw_tool_docs_available_vignettes` | Find package vignettes |
-| `btw_tool_env_describe_environment` | Inspect objects in the R session |
-| `btw_tool_env_describe_data_frame` | Inspect data frame structure |
-| `btw_tool_search_packages` | Search CRAN for packages |
-| `btw_tool_session_platform_info` | Check R version and platform |
-| `btw_tool_session_check_package_installed` | Verify package availability |
-
-**Use native tools** (Read, Edit, Write, Glob, Grep, Bash) for file editing, git operations, and file search -- they are faster than MCP equivalents.
+Nothing persists between calls, so make each invocation self-contained. For
+anything longer than a line or two, write a scratch `.R` file and run that
+instead of fighting shell quoting. Tests take minutes -- never cancel them.
 
 ## Working Effectively
 
-### Session Setup (done by user)
+### Session Setup (once per checkout)
 
-At the start of a session, check for a connected R session via `list_r_sessions`. If none is available, **prompt the user** to run in their interactive R console:
-
-```r
-source(".claude/session_startup.R")
+```bash
+Rscript --no-init-file -e 'source(".claude/session_startup.R")'
 ```
 
-This restores dependencies, installs the module, configures jaspTools, and registers the session. Then connect via `list_r_sessions` / `select_r_session`.
+Restores renv, installs the module and jaspTools, sets `module.dirs`.
 
 ### Hot-Reload After Code Changes
 
-- **R code only changed:** `devtools::load_all()` via `btw_tool_run_r`
+- **R code only changed:** `devtools::load_all()` inside the Rscript call
 - **QML, dependencies, or imports changed:** `renv::install(".", prompt = FALSE)`
 
 ### Running Tests
 
-Run via `btw_tool_run_r` in the persistent session:
+Run via Rscript, sourcing the preamble first:
 
 **Agent-optimized** (preferred -- compact output, returns queryable result object):
 

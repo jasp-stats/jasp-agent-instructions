@@ -9,7 +9,7 @@ How Claude Code, OpenAI Codex CLI, and GitHub Copilot instruction files relate, 
 | **Main instructions** | `.claude/CLAUDE.md` | `AGENTS.md` (repo root) | `.github/copilot-instructions.md` |
 | **Rule/instruction dir** | `.claude/rules/*.md` | `.codex/rules/*.md` | `.github/instructions/*.md` |
 | **Skills** | `.claude/skills/<name>/SKILL.md` | `.agents/skills/<name>/SKILL.md` | n/a |
-| **MCP config** | `.mcp.json` (JSON) | `.codex/config.toml` (TOML) | `.vscode/mcp.json` (JSON) |
+| **R execution** | direct `Rscript` + `.claude/r-preamble.R` | same | same |
 | **Execution policy** | n/a (instruction-based) | `.codex/rules/default.rules` (Starlark) | n/a |
 | **Hooks** | `.claude/hooks/*.js`, `*.py` | n/a (`notify` only) | n/a |
 | **Project config** | `.claude/settings.local.json` | `.codex/config.toml` | `.vscode/settings.json` |
@@ -19,12 +19,11 @@ How Claude Code, OpenAI Codex CLI, and GitHub Copilot instruction files relate, 
 ```
 repo/
 ├── AGENTS.md                           # Codex main instructions
-├── codex.toml                          # Root-level Codex fallback (MCP + reasoning)
-├── .mcp.json                           # Claude Code MCP (not committed)
+├── codex.toml                          # Root-level Codex fallback (reasoning)
 │
 ├── .claude/
 │   ├── CLAUDE.md                       # Claude main instructions
-│   ├── mcp-server.R                    # Shared MCP server script (all platforms)
+│   ├── r-preamble.R                    # Per-call R bootstrap (all platforms)
 │   ├── session_startup.R               # Shared R bootstrap
 │   ├── settings.local.json             # Claude local config (not committed)
 │   ├── hooks/
@@ -37,7 +36,7 @@ repo/
 │       └── fix-debug-analysis.md       # Claude skill (flat .md)
 │
 ├── .codex/
-│   ├── config.toml                     # Codex project config + MCP
+│   ├── config.toml                     # Codex project config
 │   └── rules/                          # 12 rule files (no frontmatter) + Starlark
 │       ├── default.rules               # Execution policy (Starlark)
 │       ├── r-instructions.md
@@ -57,7 +56,6 @@ repo/
 │       └── ...
 │
 └── .vscode/
-    └── mcp.json                        # Copilot MCP config (not committed)
 ```
 
 ## How Each Platform Discovers Instructions
@@ -82,7 +80,7 @@ repo/
 
 ### Shared (identical content)
 - **Rule body text** — the markdown after frontmatter in each rule file is identical across all three platforms
-- **MCP server script** — `.claude/mcp-server.R` is used by all platforms
+- **R bootstrap** — `.claude/r-preamble.R` is used by all platforms
 - **R session startup** — `.claude/session_startup.R`
 - **Skill body text** — fix-debug-analysis content is identical
 
@@ -109,26 +107,12 @@ description: "R function structure, validation, jaspResults API"
 
 **Main instruction files** (CLAUDE.md, AGENTS.md, copilot-instructions.md) are structurally identical but differ in:
 - Rule directory references (`.claude/rules/` vs `.codex/rules/` vs `.github/instructions/`)
-- MCP config notes (`.mcp.json` vs `config.toml` vs `.vscode/mcp.json`)
 
-**MCP config format** is semantically identical but syntactically different:
+**R execution** is the same on all three platforms: agents call `Rscript`
+directly and source `.claude/r-preamble.R` for the per-call bootstrap, so there
+is nothing platform-specific to keep in sync.
 
-```json
-// .mcp.json (Claude Code)
-{ "mcpServers": { "r-mcptools": { "type": "stdio", "command": "Rscript", "args": [...] } } }
-```
-```json
-// .vscode/mcp.json (GitHub Copilot)
-{ "servers": { "r-mcptools": { "command": "Rscript", "args": [...] } } }
-```
-```toml
-# .codex/config.toml (Codex CLI)
-[mcp_servers.r-mcptools]
-command = "Rscript"
-args = ["-e", "source('.claude/mcp-server.R')"]
-```
-
-**Note on root `codex.toml` vs `.codex/config.toml`:** Both exist intentionally. The root-level `codex.toml` is a fallback used by `container_entrypoint.sh` when Codex CLI is invoked from the repo root without a `.codex/` directory present. It contains only MCP config and reasoning settings. The `.codex/config.toml` is the full project config (sandbox mode, approval policy, project doc limit, MCP, reasoning) and takes precedence when the `.codex/` directory exists.
+**Note on root `codex.toml` vs `.codex/config.toml`:** Both exist intentionally. The root-level `codex.toml` is a fallback used by `container_entrypoint.sh` when Codex CLI is invoked from the repo root without a `.codex/` directory present. It contains only reasoning settings. The `.codex/config.toml` is the full project config (sandbox mode, approval policy, project doc limit, reasoning) and takes precedence when the `.codex/` directory exists.
 
 **Skills** have different formats for the same content:
 
@@ -180,12 +164,10 @@ Edit `.claude/CLAUDE.md`, then replicate structural changes to `AGENTS.md` and `
 2. Create `.agents/skills/my-skill/SKILL.md` — add `name:` and `description:` frontmatter, same body
 3. GitHub Copilot has no skill equivalent — embed critical parts in an `.instructions.md` file instead
 
-### When changing MCP servers
+### When changing the R bootstrap
 
-Update all three config files:
-- `.mcp.json` — JSON with `mcpServers` key and `type: "stdio"`
-- `.codex/config.toml` — TOML `[mcp_servers.<name>]` section
-- `.vscode/mcp.json` — JSON with `servers` key (no type field)
+`.claude/r-preamble.R` and `.claude/session_startup.R` are shared by all three
+platforms. Change them once; no per-platform config mirrors them.
 
 ### When changing execution policy
 
@@ -249,7 +231,6 @@ description: >
 | Skills / custom commands | **yes** | **yes** | no |
 | Pre/post tool hooks | **yes** | no | no |
 | Execution policy (Starlark) | no | **yes** | no |
-| MCP servers | **yes** | **yes** | **yes** |
 | Nested directory instructions | partial | **yes** | partial |
 | Multi-agent / sub-agents | **yes** | **yes** | no |
 | Web search built-in | **yes** | **yes** | no |
@@ -261,7 +242,6 @@ When updating instructions, verify all three platforms stay aligned:
 
 - [ ] Rule body text is identical across `.claude/rules/`, `.codex/rules/`, `.github/instructions/`
 - [ ] Main instruction files reference the correct rule directory for their platform
-- [ ] MCP server list matches across `.mcp.json`, `.codex/config.toml`, `.vscode/mcp.json`
 - [ ] New rules are linked in all three main instruction files
 - [ ] Skills exist in both `.claude/skills/` and `.agents/skills/`
 - [ ] Execution policy in `.codex/rules/default.rules` reflects any new safety constraints

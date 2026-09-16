@@ -3,15 +3,15 @@ name: fix-debug-analysis
 description: >
   Guide for debugging JASP analysis functions via code inspection and saveRDS
   state capture. Use when fixing bugs, troubleshooting errors, or debugging R
-  analysis functions in JASP modules through MCP sessions. Also use when a user
+  analysis functions in JASP modules via direct Rscript calls. Also use when a user
   provides a .jasp file to reproduce an issue.
 ---
 
-# Fix & Debug JASP Analysis (MCP Session)
+# Fix & Debug JASP Analysis
 
-Quick reference for debugging JASP analysis functions through MCP sessions.
+Quick reference for debugging JASP analysis functions with direct Rscript calls.
 
-**Note**: `browser()` and `recover()` require interactive R console and **do not work** through MCP's `btw_tool_run_r`.
+**Note**: `browser()` and `recover()` require an interactive R console and **do not work** in non-interactive Rscript calls.
 
 ---
 
@@ -36,7 +36,7 @@ When the bug depends on runtime values that can't be deduced from code reading a
 
 1. **Instrument**: Add saveRDS() before the error location
 2. **Capture**: Hot-reload and run analysis, copy debug path from console
-3. **Inspect**: Load saved state and examine values via MCP
+3. **Inspect**: Load saved state and examine values via Rscript
 4. **Fix**: Develop and test fix using captured state
 5. **Verify**: Remove debug code, hot-reload, confirm fix works
 
@@ -164,7 +164,7 @@ Add saveRDS() just **before** the line that's failing:
 ### Step 3: Hot-Reload and Capture
 
 ```r
-# Via btw_tool_run_r in MCP
+# Via Rscript
 devtools::load_all()
 
 # Re-run the analysis (use same code that triggered original error)
@@ -180,7 +180,7 @@ Copy the debug path from the console output.
 ### Step 4: Inspect Captured State
 
 ```r
-# Via btw_tool_run_r in MCP
+# Via Rscript
 debug_path <- "C:/Users/.../Temp/RtmpXXX/debug_state.rds"
 debug_data <- readRDS(debug_path)
 
@@ -205,7 +205,7 @@ for (i in seq_along(debug_data$relatedData)) {
 Based on inspection, develop fix logic using the saved objects:
 
 ```r
-# Via btw_tool_run_r in MCP
+# Via Rscript
 # Test the fix logic interactively using saved state
 
 # Example: Filter out invalid values
@@ -227,7 +227,7 @@ Once fix logic works, implement it in the source file.
 3. Hot-reload and verify:
 
 ```r
-# Via btw_tool_run_r in MCP
+# Via Rscript
 devtools::load_all()
 
 set.seed(1)

@@ -6,7 +6,27 @@ This module uses the `jaspTools` testing framework. Tests are **critical** and m
 
 ## 2) Running Tests
 
-Run via `btw_tool_run_r` in the persistent R session:
+Run via Rscript. Every call is a fresh process, so source the preamble first:
+
+```bash
+Rscript --no-init-file -e 'source(".claude/r-preamble.R"); agentTestAll()'
+```
+
+In the JASP container, `setupJaspTools()` needs explicit paths instead of the
+preamble defaults:
+
+```bash
+Rscript --no-init-file -e '
+  renv::load()
+  library(jaspTools)
+  setupJaspTools(pathJaspDesktop="/opt/jasp-desktop", installJaspModules=FALSE, installJaspCorePkgs=FALSE, quiet=TRUE, force=TRUE)
+  setPkgOption("module.dirs", ".")
+  setPkgOption("reinstall.modules", FALSE)
+  agentTestAll()
+'
+```
+
+The R calls below go inside that `-e` expression.
 
 **Agent-optimized** (preferred -- compact output, returns queryable result object):
 
@@ -27,20 +47,7 @@ testAll()
 testAnalysis("AnalysisName")
 ```
 
-**MCP timeout for large modules:** `agentTestAll()` can take 180-300+ seconds. If `btw_tool_run_r` times out, fall back to Bash:
-
-```bash
-Rscript --no-init-file -e '
-  renv::load()
-  library(jaspTools)
-  setupJaspTools(pathJaspDesktop="/opt/jasp-desktop", installJaspModules=FALSE, installJaspCorePkgs=FALSE, quiet=TRUE, force=TRUE)
-  setPkgOption("module.dirs", ".")
-  setPkgOption("reinstall.modules", FALSE)
-  agentTestAll()
-'
-```
-
-Do NOT retry via MCP after a timeout -- use the Bash fallback immediately.
+**Long runs:** `agentTestAll()` can take 180-300+ seconds. Let it finish -- never cancel it, and do not reduce the suite to make it faster.
 
 **Critical rules:**
 
@@ -139,7 +146,7 @@ results  <- jaspTools::runAnalysis("AnalysisName", encoded$dataset, encoded$opti
 
 ### Before making code changes
 
-Run `agentTestAll()` via `btw_tool_run_r` to establish baseline -- all tests should pass.
+Run `agentTestAll()` to establish baseline -- all tests should pass.
 
 ### After making code changes
 

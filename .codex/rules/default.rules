@@ -27,11 +27,11 @@ prefix_rule(
     justification = "File search is safe.",
 )
 
-# Allow Rscript execution (MCP server, tests, analysis runs)
+# Allow Rscript execution (tests, analysis runs)
 prefix_rule(
     pattern = ["Rscript"],
     decision = "allow",
-    justification = "R execution needed for MCP server, tests, and analysis.",
+    justification = "R execution needed for tests and analysis.",
 )
 
 # Allow qmllint for QML validation
