@@ -7,7 +7,8 @@ approval_policy = "on-request"
 
 # Increase project doc limit to accommodate comprehensive AGENTS.md
 project_doc_max_bytes = 65536
-
+model_context_window            = 1000000
+model_auto_compact_token_limit  =  800000  
 # Reasoning: use high effort for complex module-fixing tasks
-model_reasoning_effort = "high"
+model_reasoning_effort = "xhigh"
 model_reasoning_summary = "concise"

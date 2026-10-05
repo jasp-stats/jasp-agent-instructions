@@ -1,7 +1,0 @@
-# Codex CLI configuration
-# Fallback: used when .codex/config.toml is not available
-
-# Reasoning: use high effort for complex module-fixing tasks
-model_reasoning_effort = "xhigh"
-model_reasoning_summary = "concise"
-model_auto_compact_token_limit = 200000
