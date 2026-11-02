@@ -134,3 +134,10 @@ if (length(options[["separatePlots"]]) > 0) {
   plot$plotObject <- makePlot(data)
 }
 ```
+
+---
+
+## 6) Plot and Axis Titles
+
+- Plot titles (`createJaspPlot(title = ...)`) must be character strings. `expression()` and call objects fail JSON serialization (`No method asJSON S3 class: expression`).
+- Axis labels may be a single `expression()`. A call object of length > 1, such as a raw `bquote()` result or a label taken from another package's output (e.g., metafor `profile()` returns `sigma[1]^2 ~ "Value"`), errors during plot conversion (`if (robust_nchar(axisTitleText) > 0)`: "the condition has length > 1"). Convert such labels to plain Unicode text (`"σ₁² Value"`) or a single `expression()`.

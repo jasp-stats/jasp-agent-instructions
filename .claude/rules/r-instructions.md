@@ -19,6 +19,8 @@ paths:
   - Read GUI options directly with `options[["name"]]`; do not add R-side normalization, old-name aliases, compatibility maps, or backup defaults for missing QML options in unreleased work.
   - For checkbox options, use `if (options[["flag"]])`, not `isTRUE(options[["flag"]])`; `isTRUE()` hides missing/disconnected options by treating them like `FALSE`.
   - Keep option names in `$dependOn()` vectors synchronized with current QML `name:` values.
+  - Do not silently override a visible GUI choice in R (e.g., computing t-tests while the GUI shows z); constrain the GUI instead and upgrade saved files (see the QML instructions).
+  - Options whose control is hidden or disabled in the current configuration still arrive with their last value. Guard those reads so the analysis skips the option quietly instead of erroring or showing unavailable output.
 
 - **Recommended structure (3 roles):**
   1) **Main function** orchestrates and wires output elements.

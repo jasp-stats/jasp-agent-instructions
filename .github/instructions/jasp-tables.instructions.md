@@ -200,3 +200,11 @@ table$setError(.cleanErrorMessage(tryResult))
 ```
 
 See [jasp-containers-and-errors.md](jasp-containers-and-errors.md) for the full create-then-error and graceful degradation patterns.
+
+---
+
+## 10) Output Layout and Coefficient Columns
+
+- When the maintainer names a reference analysis, mirror its output layout: the same containers, the same split into tables, and the same column sets.
+- Put parameters specific to one method (e.g., a publication-bias coefficient) in their own table inside that method's summary container, not as extra rows of a shared table such as the pooled estimates.
+- Coefficient tables report the estimate, SE, CI, test statistic (with df for t-tests) and p-value; build them with the shared column helpers (Section 4).

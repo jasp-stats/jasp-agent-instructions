@@ -16,6 +16,8 @@ description: "R function structure, validation, jaspResults API, output componen
   - `jaspResults` is a container that stores all of the analysis output and byproducts (if they are supposed to be kept for later use).
   - `dataset` is the loaded dataset in JASP
   - `options` are the UI choices from QML; **do not rename** option keys (they’re your API).
+  - Do not silently override a visible GUI choice in R (e.g., computing t-tests while the GUI shows z); constrain the GUI instead and upgrade saved files (see the QML instructions).
+  - Options whose control is hidden or disabled in the current configuration still arrive with their last value. Guard those reads so the analysis skips the option quietly instead of erroring or showing unavailable output.
 
 - **Recommended structure (3 roles):**
   1) **Main function** orchestrates and wires output elements.

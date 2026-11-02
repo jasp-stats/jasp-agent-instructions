@@ -177,6 +177,7 @@ After `runAnalysis()`, check:
 ### Key Files to Check After Changes
 - Always check corresponding test file in `tests/testthat/` when modifying R functions
 - For released analyses, update `inst/Upgrades.qml` when renaming QML options to maintain backward compatibility. For unreleased analyses, keep only the current QML/R names.
+- Keep `NEWS.md` entries short and user-facing: a few bullets per release, matching the length and tone of earlier entries, without implementation details.
 
 ## Development Rules
 
